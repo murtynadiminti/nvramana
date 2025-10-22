@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Eye Disease Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+    video, canvas {
+      border: 2px solid #333;
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2d89ef;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Eye Disease Detection via Webcam</h1>
+  <video id="webcam" autoplay playsinline width="300" height="200"></video><br>
+  <button onclick="captureImage()">Scan Eye</button>
+  <canvas id="canvas" width="300" height="200" style="display:none;"></canvas>
+  <div id="output">Waiting for scan...</div>
+
+  <script>
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const output = document.getElementById('output');
+    const ctx = canvas.getContext('2d');
+
+    let webcamActive = false;
+
+    // Ask for webcam access
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        webcamActive = true;
+      })
+      .catch(err => {
+        console.error("Webcam access error:", err);
+        output.innerText = "Webcam access denied. Please allow camera access.";
+        webcamActive = false;
+      });
+
+    // Dummy disease prediction function
+    function predictDisease(imageData) {
+      const diseases = [
+        'Healthy Eye',
+        'Diabetic Retinopathy',
+        'Glaucoma',
+        'Cataract',
+        'Age-related Macular Degeneration'
+      ];
+      const randomIndex = Math.floor(Math.random() * diseases.length);
+      return diseases[randomIndex];
+    }
+
+    // Text-to-speech
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(msg);
+    }
+
+    // Capture and predict
+    function captureImage() {
+      if (!webcamActive) {
+        output.innerText = "Webcam not active. Please allow access.";
+        speak("Webcam not active. Please allow access.");
+        return;
+      }
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      const result = predictDisease(imageData);
+      output.innerText = "Detected: " + result;
+      speak("Detected eye condition is: " + result);
+    }
+  </script>
+</body>
+</html>
